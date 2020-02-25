@@ -5,10 +5,15 @@ namespace App\Controller;
 
 
 use App\Entity\Product;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\Encoder\JsonEncoder;
+use Symfony\Component\Serializer\Encoder\XmlEncoder;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 
 
 class ProductController extends AbstractController
@@ -81,9 +86,22 @@ class ProductController extends AbstractController
      */
     public function viewProduct(Request $request)
     {
-//        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        return new \Symfony\Component\HttpFoundation\Response(var_dump($this->getUser()));
-        //TODO Implement GET functionality
+        $encoders = [new XmlEncoder(), new JsonEncoder()];
+        $normalizers = [new ObjectNormalizer()];
 
+        $serializer = new Serializer($normalizers, $encoders);
+
+        $entityManager = $this->getDoctrine()->getManager();
+        $data = json_decode($request->getContent(), true);
+
+        if (empty($data['id'])) {        //GIVE ENTIRE LIST
+            $products = $entityManager->getRepository(Product::class)->findAll();
+            $jsonContent = $serializer->serialize($products, 'json');
+            return new Response($jsonContent);
+        } else { // GIVE 1 ITEM
+            $product = $entityManager->getRepository(Product::class)->find($data['id']);
+            $jsonContent = $serializer->serialize($product, 'json');
+            return new Response($jsonContent);
+        }
     }
 }
