@@ -1,0 +1,23 @@
+version: '2'
+
+services:
+  myapp:
+    image: 'bitnami/symfony:1'
+    ports:
+      - '8000:8000'
+    volumes:
+      - '.:/app'
+    environment:
+      - MARIADB_USER=Symfony
+      - MARIADB_PASSWORD=test1234
+      - MARIADB_DATABASE=symfonyapitest
+    depends_on:
+      - mariadb
+  mariadb:
+    image: 'bitnami/mariadb:10.3'
+    ports:
+      - '3306:3306'
+    environment:
+      - MARIADB_ROOT_PASSWORD=test1234
+      - MARIADB_DATABASE=symfonyapitest
+
